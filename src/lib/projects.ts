@@ -32,7 +32,7 @@ export interface WorkEntry {
 export const workHistory: WorkEntry[] = [
   {
     company: "Adobe Firefly",
-    logoUrl: "/projects/app logos/adobe firefly.png",
+    logoUrl: "/projects/app-logos/adobe-firefly.png",
     role: "Product designer, GenAI",
     years: "2023–2025",
     description:
@@ -40,7 +40,7 @@ export const workHistory: WorkEntry[] = [
   },
   {
     company: "Microsoft Outlook",
-    logoUrl: "/projects/app logos/microsoft outlook.png",
+    logoUrl: "/projects/app-logos/microsoft-outlook.png",
     role: "Product designer",
     years: "2020–2022",
     description:
@@ -48,7 +48,7 @@ export const workHistory: WorkEntry[] = [
   },
   {
     company: "Microsoft Excel",
-    logoUrl: "/projects/app logos/microsoft excel.png",
+    logoUrl: "/projects/app-logos/microsoft-excel.png",
     role: "UX Designer",
     years: "2018–2019",
     description:
@@ -56,7 +56,7 @@ export const workHistory: WorkEntry[] = [
   },
   {
     company: "Carnegie Mellon University",
-    logoUrl: "/projects/app logos/CMU.png",
+    logoUrl: "/projects/app-logos/CMU.png",
     logoRounded: false,
     role: "M.Des",
     years: "2016–2018",
@@ -66,7 +66,7 @@ export const workHistory: WorkEntry[] = [
 export const projectGroups: CompanyGroup[] = [
   {
     company: "Adobe Firefly",
-    logoUrl: "/projects/app logos/adobe firefly.png",
+    logoUrl: "/projects/app-logos/adobe-firefly.png",
     role: "Product designer",
     years: "2023–2025",
     description: "Led 0→1 design of generative audio tools and multi-model UX systems.",
@@ -78,7 +78,7 @@ export const projectGroups: CompanyGroup[] = [
         hook: "Bringing creative direction to AI-generated speech, not just conversion from text to audio.",
         description:
           "Led the 0 to 1 design of a generative speech tool that turns text into expressive audio. Introduced voice casting (200+ voices), controls like speed and pitch, and emotion tagging mapped to the waveform to shape tone and delivery. Enabled fast iteration with preview before full generation and added editing tools like pronunciation overrides and find and replace.",
-        videoUrl: "/projects/Gen-audio/02-Generative speech.mp4",
+        videoUrl: "/projects/Gen-audio/02-Generative-speech.mp4",
         bg: "#000000",
       },
       {
@@ -88,7 +88,7 @@ export const projectGroups: CompanyGroup[] = [
         hook: "Turning sound design into a performance, not a technical workflow.",
         description:
           "Led the 0 to 1 design of a generative sound effects tool for composing audio directly on video. Introduced voice performance, allowing users to control timing and energy through mic input. Designed timeline interactions from scratch, including placement, scrubbing, and iteration, with no prior patterns to rely on.",
-        videoUrl: "/projects/Gen-audio/01-Generative sound effects.mp4",
+        videoUrl: "/projects/Gen-audio/01-Generative-sound-effects.mp4",
         bg: "#000000",
       },
       {
@@ -113,7 +113,7 @@ export const projectGroups: CompanyGroup[] = [
   },
   {
     company: "Microsoft Outlook",
-    logoUrl: "/projects/app logos/microsoft outlook.png",
+    logoUrl: "/projects/app-logos/microsoft-outlook.png",
     role: "Product designer",
     years: "2020–2022",
     description: "Drove 3D illustrations, expressive theming, and reactions UX.",
@@ -125,7 +125,7 @@ export const projectGroups: CompanyGroup[] = [
         hook: "Reimagining empty states and system moments through expressive 3D illustration.",
         description:
           "Led the design of a 3D illustration system for Outlook across all endpoints. Created a library of expressive, on-brand assets for empty states, onboarding, and error moments — replacing flat, generic imagery with illustrations that felt native to each platform.",
-        videoUrl: "/projects/3d-illustrations/01-3D Illustrations.mp4",
+        videoUrl: "/projects/3d-illustrations/01-3D-Illustrations.mp4",
         bg: "#f4f4f4",
       },
       {
@@ -135,7 +135,7 @@ export const projectGroups: CompanyGroup[] = [
         hook: "Giving 350 million Outlook users the power to make their inbox feel like theirs.",
         description:
           "Delivered 17 themes in collaboration with M365 partners. Led and evolved Outlook's theming story with the design systems team to define a coherent solution. Redefined Outlook's elevation, layering, and color system to be consistent and polished on every platform.",
-        imageUrl: "/projects/expressive-theming/02-Cross platform.png",
+        imageUrl: "/projects/expressive-theming/02-Cross-platform.png",
         bg: "#f4f4f4",
       },
       {
@@ -145,14 +145,14 @@ export const projectGroups: CompanyGroup[] = [
         hook: "Contextualizing social reactions for professional email, from concept to cross-platform delivery.",
         description:
           "Collaborated closely with M365 partners to develop reactions UX grounded in Outlook's user jobs. Contextualized reactions in the email experience and delivered a considered visual, interaction, and motion experience across desktop and mobile.",
-        videoUrl: "/projects/reactions/01-Visual refinements.mov",
+        videoUrl: "/projects/reactions/01-Visual-refinements.mov",
         bg: "#f4f4f4",
       },
     ],
   },
   {
     company: "Microsoft Excel",
-    logoUrl: "/projects/app logos/microsoft excel.png",
+    logoUrl: "/projects/app-logos/microsoft-excel.png",
     role: "UX Designer",
     years: "2018–2019",
     description: "Designed Smart Templates and modernized core Excel web experiences.",
@@ -164,7 +164,7 @@ export const projectGroups: CompanyGroup[] = [
         hook: "Turning Microsoft 365 into a personal productivity platform through intelligent, data-connected templates.",
         description:
           "Delivered 10+ smart templates as premium content offered via M365 consumer subscription. Designed high-value consumer templates using Wolfram data through a new capability called datatypes, enabling templates to update automatically with real-world information.",
-        videoUrl: "/projects/smart-templates/01-Excel x Wolfram templates.mp4",
+        videoUrl: "/projects/smart-templates/01-Excel-x-Wolfram-templates.mp4",
         bg: "#000000",
       },
       {
@@ -174,7 +174,7 @@ export const projectGroups: CompanyGroup[] = [
         hook: "Modernizing Excel's core web experiences to reduce friction and elevate everyday workflows.",
         description:
           "Re-designed filtering and shortcuts UX for Excel on the web. As an opportunity to modernize several core experiences, the goal was to elevate user delight and boost product promotability through cleaner interaction patterns and a more cohesive visual language.",
-        videoUrl: "/projects/ux-redesigns/01-Core feature redesigns.mp4",
+        videoUrl: "/projects/ux-redesigns/01-Core-feature-redesigns.mp4",
         bg: "#ffffff",
       },
     ],
