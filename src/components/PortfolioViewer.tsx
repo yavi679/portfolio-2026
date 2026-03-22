@@ -1,238 +1,345 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { ArrowUp, ArrowDown, ArrowLeft, ArrowRight, Mail, Linkedin } from "lucide-react";
-import { projectGroups, aboutProject, getAllProjects } from "@/lib/projects";
+import { useState, useEffect, useCallback, useRef } from "react";
+import { motion } from "motion/react";
+import { ArrowLeft, ArrowRight } from "lucide-react";
+import { getAllProjects, getProjectGroup, workHistory } from "@/lib/projects";
 
-function getFormattedDate() {
-  const now = new Date();
-  const month = now.toLocaleString("en-US", { month: "short" });
-  const day = now.getDate();
-  const weekday = now.toLocaleString("en-US", { weekday: "short" });
-  return { date: `${month} ${day}`, weekday };
-}
+const allProjects = getAllProjects();
 
 export default function PortfolioViewer() {
-  const [selectedId, setSelectedId] = useState("smart-templates");
-  const [highlightIndex, setHighlightIndex] = useState(4);
-  const [pressedDir, setPressedDir] = useState<"up" | "down" | null>(null);
+  const [selectedId, setSelectedId] = useState(allProjects[0]?.id ?? "");
+  const [aboutExpanded, setAboutExpanded] = useState(false);
+  const [mediaProgress, setMediaProgress] = useState(0);
+  const [isMuted, setIsMuted] = useState(true);
+  const [mediaDuration, setMediaDuration] = useState<number | null>(null);
 
-  const allProjects = getAllProjects();
-  const currentProject = allProjects.find((p) => p.id === selectedId)!;
-  const currentProjectIndex = allProjects.findIndex((p) => p.id === selectedId);
-  const highlights = currentProject.highlights;
-  const highlightCount = highlights.length;
-  const progressPct = highlightCount > 0 ? ((highlightIndex + 1) / highlightCount) * 100 : 0;
+  const currentIndex = allProjects.findIndex((p) => p.id === selectedId);
+  const currentProject = allProjects[currentIndex];
+  const currentGroup = getProjectGroup(selectedId);
+  const isVideo = !!currentProject?.videoUrl;
 
-  const { date, weekday } = getFormattedDate();
+  const videoRef = useRef<HTMLVideoElement | null>(null);
 
-  function selectProject(id: string) {
+  const selectProject = useCallback((id: string) => {
     setSelectedId(id);
-    setHighlightIndex(0);
-  }
+    setMediaProgress(0);
+    setIsMuted(true);
+    setMediaDuration(null);
+  }, []);
 
-  function navigateProject(dir: "up" | "down") {
-    const next = dir === "up" ? currentProjectIndex - 1 : currentProjectIndex + 1;
-    if (next >= 0 && next < allProjects.length) {
-      selectProject(allProjects[next].id);
-    }
-  }
+  const navigateProject = useCallback(
+    (dir: "prev" | "next") => {
+      if (dir === "prev" && currentIndex > 0)
+        selectProject(allProjects[currentIndex - 1].id);
+      if (dir === "next" && currentIndex < allProjects.length - 1)
+        selectProject(allProjects[currentIndex + 1].id);
+    },
+    [currentIndex, selectProject]
+  );
 
+  // Sync muted state to video element
   useEffect(() => {
-    function handleKeyDown(e: KeyboardEvent) {
-      if (e.key === "ArrowUp") {
-        e.preventDefault();
-        setPressedDir("up");
-        const prev = currentProjectIndex - 1;
-        if (prev >= 0) selectProject(allProjects[prev].id);
-      } else if (e.key === "ArrowDown") {
-        e.preventDefault();
-        setPressedDir("down");
-        const next = currentProjectIndex + 1;
+    if (videoRef.current) videoRef.current.muted = isMuted;
+  }, [isMuted]);
+
+  // Video progress + auto-advance
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video) return;
+    let rafId: number;
+    const tick = () => {
+      if (video.duration) setMediaProgress((video.currentTime / video.duration) * 100);
+      rafId = requestAnimationFrame(tick);
+    };
+    const onLoadedMetadata = () => setMediaDuration(video.duration);
+    if (video.readyState >= 1) setMediaDuration(video.duration);
+    const onPlay = () => { rafId = requestAnimationFrame(tick); };
+    const onPause = () => cancelAnimationFrame(rafId);
+    const onEnded = () => {
+      cancelAnimationFrame(rafId);
+      setMediaProgress(0);
+      const next = currentIndex + 1;
+      if (next < allProjects.length) selectProject(allProjects[next].id);
+    };
+    video.addEventListener("loadedmetadata", onLoadedMetadata);
+    video.addEventListener("play", onPlay);
+    video.addEventListener("pause", onPause);
+    video.addEventListener("ended", onEnded);
+    if (!video.paused) rafId = requestAnimationFrame(tick);
+    return () => {
+      cancelAnimationFrame(rafId);
+      video.removeEventListener("loadedmetadata", onLoadedMetadata);
+      video.removeEventListener("play", onPlay);
+      video.removeEventListener("pause", onPause);
+      video.removeEventListener("ended", onEnded);
+    };
+  }, [currentProject?.videoUrl, currentIndex, selectProject]);
+
+  // Image/gif timer + auto-advance
+  useEffect(() => {
+    if (isVideo) return;
+    setMediaDuration((currentProject?.duration ?? 5000) / 1000);
+    setMediaProgress(0);
+    const DURATION = currentProject?.duration ?? 5000;
+    const TICK = 50;
+    let elapsed = 0;
+    const interval = setInterval(() => {
+      elapsed += TICK;
+      const pct = Math.min((elapsed / DURATION) * 100, 100);
+      setMediaProgress(pct);
+      if (elapsed >= DURATION) {
+        clearInterval(interval);
+        setMediaProgress(0);
+        const next = currentIndex + 1;
         if (next < allProjects.length) selectProject(allProjects[next].id);
       }
-    }
-    function handleKeyUp(e: KeyboardEvent) {
-      if (e.key === "ArrowUp" || e.key === "ArrowDown") setPressedDir(null);
+    }, TICK);
+    return () => clearInterval(interval);
+  }, [selectedId, isVideo, currentProject?.duration, currentIndex, selectProject]);
+
+  // Keyboard navigation
+  useEffect(() => {
+    function handleKeyDown(e: KeyboardEvent) {
+      if (e.key === "a" || e.key === "A") {
+        setAboutExpanded((v) => !v);
+      } else if (e.key === "ArrowLeft" || e.key === "ArrowUp") {
+        e.preventDefault();
+        navigateProject("prev");
+      } else if (e.key === "ArrowRight" || e.key === "ArrowDown") {
+        e.preventDefault();
+        navigateProject("next");
+      }
     }
     window.addEventListener("keydown", handleKeyDown);
-    window.addEventListener("keyup", handleKeyUp);
-    return () => {
-      window.removeEventListener("keydown", handleKeyDown);
-      window.removeEventListener("keyup", handleKeyUp);
-    };
-  }, [currentProjectIndex, allProjects]);
-
-  function navigateHighlight(dir: "prev" | "next") {
-    if (dir === "prev" && highlightIndex > 0) setHighlightIndex((h) => h - 1);
-    if (dir === "next" && highlightIndex < highlightCount - 1) setHighlightIndex((h) => h + 1);
-  }
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [navigateProject]);
 
   return (
-    <div className="h-screen flex flex-col bg-slate-50 overflow-hidden">
-      {/* Top bar — date */}
-      <div className="flex items-center justify-center gap-8 min-h-[10vh] shrink-0">
-        {/* p-ui-medium: 16px / 500 / lh-24 */}
-        <span className="text-slate-600 text-base font-medium leading-6">{date}</span>
-        <span className="text-slate-400 text-base font-medium leading-6">{weekday}</span>
-      </div>
+    <div className="h-screen overflow-hidden relative bg-gray-50">
 
-      {/* Main content */}
-      <div className="flex-1 flex gap-8 px-8 min-h-0">
-        {/* Left — project nav */}
-        <div className="flex-[1] flex flex-col min-h-0">
-          <nav className="overflow-y-auto flex flex-col">
-            {/* About Vikas — standalone at top */}
-            <button
-              onClick={() => selectProject(aboutProject.id)}
-              className={`w-full text-left px-4 py-2 rounded-md text-base font-medium leading-6 transition-colors ${
-                selectedId === aboutProject.id
-                  ? "bg-slate-300 text-slate-600"
-                  : "text-slate-400 hover:bg-slate-200 hover:text-slate-500 active:bg-slate-300 active:text-slate-600"
-              }`}
-            >
-              {aboutProject.title}
-            </button>
+      {/* ── About Vikas — expanded left panel ─────────────────────────── */}
+      <motion.div
+        className="absolute left-5 top-5 w-[264px] flex flex-col gap-10 overflow-y-auto"
+        style={{ pointerEvents: aboutExpanded ? "auto" : "none" }}
+        initial={false}
+        animate={aboutExpanded ? "open" : "closed"}
+        variants={{
+          open: {
+            opacity: 1,
+            x: 0,
+            transition: { type: "spring", stiffness: 320, damping: 22, delay: 0.06 },
+          },
+          closed: {
+            opacity: 0,
+            x: -20,
+            transition: { duration: 0.15, ease: "easeIn" },
+          },
+        }}
+      >
+        {/* Header — click to collapse */}
+        <button
+          onClick={() => setAboutExpanded(false)}
+          className="flex items-center justify-center gap-1.5 w-full px-5 py-1 rounded-[20px] bg-gray-50 shrink-0 cursor-pointer"
+          style={{ height: 34 }}
+        >
+          <img src="/projects/avatar.png" alt="Vikas" className="rounded-full object-cover" style={{ width: 28, height: 28 }} />
+          <span className="text-gray-400 text-xs">A</span>
+        </button>
 
-            {/* Company groups */}
-            {projectGroups.map((group) => (
-              <div key={group.company}>
-                <div className="px-4 h-10 flex items-center text-slate-400 text-base font-normal leading-7">
-                  {group.company}
-                </div>
-                {group.projects.map((project) => {
-                  const isSelected = project.id === selectedId;
-                  return (
-                    <button
-                      key={project.id}
-                      onClick={() => selectProject(project.id)}
-                      className={`w-full text-left px-4 py-2 rounded-md text-base font-medium leading-6 transition-colors ${
-                        isSelected
-                          ? "bg-slate-300 text-slate-600"
-                          : "text-slate-400 hover:bg-slate-200 hover:text-slate-500 active:bg-slate-300 active:text-slate-600"
-                      }`}
-                    >
-                      {project.title}
-                    </button>
-                  );
-                })}
+        {/* Work history entries */}
+        {workHistory.map((entry) => (
+          <div key={entry.company} className="flex flex-col gap-2.5">
+            <div className="flex flex-col gap-3">
+              <div className="flex items-center justify-between">
+                <span className="text-base font-medium text-gray-900">{entry.company}</span>
+                {entry.logoUrl ? (
+                  <img
+                    src={entry.logoUrl}
+                    alt={entry.company}
+                    className={`size-5 object-cover ${entry.logoRounded === false ? "" : "rounded"}`}
+                  />
+                ) : (
+                  <div className="size-5 rounded bg-gray-200 flex items-center justify-center text-[8px] font-medium text-gray-500">
+                    {entry.logoFallback}
+                  </div>
+                )}
+              </div>
+              <div className="flex items-center justify-between text-base text-gray-400">
+                <span>{entry.role}</span>
+                <span>{entry.years}</span>
+              </div>
+            </div>
+            {entry.description && (
+              <p className="text-base text-gray-900 leading-[1.5]">{entry.description}</p>
+            )}
+          </div>
+        ))}
+      </motion.div>
+
+      {/* ── About Vikas — collapsed pill (locked at top-left) ────────── */}
+      <motion.button
+        onClick={() => setAboutExpanded(true)}
+        className="absolute top-5 left-5 z-20 flex items-center justify-center gap-1.5 bg-gray-50 rounded-full px-5 cursor-pointer"
+        style={{ height: 34, width: "calc((100vw - 220px) / 10)", pointerEvents: aboutExpanded ? "none" : "auto" }}
+        initial={{ opacity: 0, y: -6 }}
+        animate={{
+          opacity: aboutExpanded ? 0 : 1,
+          y: 0,
+        }}
+        transition={{
+          opacity: { duration: 0.12 },
+          y: { type: "spring", stiffness: 300, damping: 28, delay: 0.15 },
+        }}
+      >
+        <img src="/projects/avatar.png" alt="Vikas" className="rounded-full object-cover" style={{ width: 28, height: 28 }} />
+        <span className="text-gray-400 text-xs">A</span>
+      </motion.button>
+
+      {/* ── Main project area ──────────────────────────────────────────── */}
+      <motion.div
+        className="absolute overflow-hidden"
+        style={{ borderStyle: "solid", borderColor: "#e5e7eb" }}
+        initial={false}
+        animate={aboutExpanded ? "open" : "closed"}
+        variants={{
+          open: {
+            left: 304,
+            top: 20,
+            right: 20,
+            bottom: 20,
+            borderRadius: 20,
+            borderWidth: 1,
+            transition: { type: "spring", stiffness: 260, damping: 24 },
+          },
+          closed: {
+            left: 0,
+            top: 0,
+            right: 0,
+            bottom: 0,
+            borderRadius: 0,
+            borderWidth: 0,
+            transition: {
+              type: "spring", stiffness: 520, damping: 38,
+              borderWidth: { duration: 0.08, ease: "easeIn" },
+            },
+          },
+        }}
+      >
+        {/* Background media */}
+        {currentProject?.videoUrl && (
+          <video
+            key={currentProject.videoUrl}
+            ref={videoRef}
+            className="absolute inset-0 w-full h-full object-cover"
+            src={currentProject.videoUrl}
+            autoPlay
+            muted
+            playsInline
+          />
+        )}
+        {currentProject?.imageUrl && !currentProject.videoUrl && (
+          <img
+            key={currentProject.imageUrl}
+            className="absolute inset-0 w-full h-full object-cover"
+            src={currentProject.imageUrl}
+            alt={currentProject.title}
+          />
+        )}
+        {!currentProject?.videoUrl && !currentProject?.imageUrl && (
+          <div
+            className="absolute inset-0"
+            style={{ backgroundColor: currentProject?.bg ?? "#e5e7eb" }}
+          />
+        )}
+
+        {/* Gradient overlay */}
+        <div
+          className="absolute inset-0 pointer-events-none"
+          style={{
+            background:
+              "linear-gradient(180deg, rgba(0,0,0,0.30) 0%, rgba(255,255,255,0.95) 89.9%)",
+          }}
+        />
+
+        {/* Project info — bottom-left */}
+        <div
+          className="absolute bottom-0 left-0 p-5 flex flex-col gap-5"
+          style={{ maxWidth: 692 }}
+        >
+          {/* Header: logo · project name · role · year */}
+          {currentGroup && (
+            <div className="flex items-center gap-2.5">
+              <img
+                src={currentGroup.logoUrl}
+                alt={currentGroup.company}
+                className="rounded object-cover shrink-0"
+                style={{ width: 28, height: 27 }}
+              />
+              <span className="text-base font-medium text-gray-900 leading-6 whitespace-nowrap">
+                {currentProject.title}
+              </span>
+              <span className="text-base text-gray-600 leading-6 whitespace-nowrap">
+                {currentGroup.role}
+              </span>
+              {currentProject.year && (
+                <span className="text-base text-gray-600 leading-6 whitespace-nowrap">
+                  {currentProject.year}
+                </span>
+              )}
+            </div>
+          )}
+
+          {/* Hook */}
+          <p
+            className="font-medium text-black leading-[1.2]"
+            style={{ fontSize: 32, letterSpacing: "-0.96px" }}
+          >
+            {currentProject?.hook}
+          </p>
+
+          {/* Description */}
+          <p className="text-base text-gray-900 leading-[1.5]">
+            {currentProject?.description}
+          </p>
+        </div>
+
+        {/* Progress pills — bottom-right */}
+        <div className="absolute bottom-5 right-5 flex flex-col items-end gap-2.5">
+          <div className="flex gap-1" style={{ width: 200 }}>
+            {allProjects.map((p, i) => (
+              <div
+                key={p.id}
+                className="flex-1 h-[4px] relative rounded-full bg-gray-400 overflow-hidden"
+              >
+                {i < currentIndex && (
+                  <div className="absolute inset-0 bg-gray-900 rounded-full" />
+                )}
+                {i === currentIndex && (
+                  <div
+                    className="absolute inset-y-0 left-0 bg-gray-900 rounded-full"
+                    style={{ width: `${mediaProgress}%` }}
+                  />
+                )}
               </div>
             ))}
-          </nav>
-
-          {/* Up / Down project navigation */}
-          <div className="flex gap-1 mt-2 shrink-0">
-            <button
-              onClick={() => navigateProject("up")}
-              disabled={currentProjectIndex === 0}
-              className={`flex-1 h-10 flex items-center justify-center rounded-md text-slate-500 active:bg-slate-200 disabled:opacity-40 transition-colors outline-none ${
-                pressedDir === "up" ? "bg-slate-200" : "bg-slate-100 hover:bg-slate-200"
-              }`}
-            >
-              <ArrowUp size={16} />
-            </button>
-            <button
-              onClick={() => navigateProject("down")}
-              disabled={currentProjectIndex === allProjects.length - 1}
-              className={`flex-1 h-10 flex items-center justify-center rounded-md text-slate-500 active:bg-slate-200 disabled:opacity-40 transition-colors outline-none ${
-                pressedDir === "down" ? "bg-slate-200" : "bg-slate-100 hover:bg-slate-200"
-              }`}
-            >
-              <ArrowDown size={16} />
-            </button>
           </div>
-        </div>
-
-        {/* Middle — media + highlight controls */}
-        <div className="flex-[3] flex flex-col items-center gap-5 min-h-0 pb-6">
-          {/* Media placeholder */}
-          <div className="flex-1 w-full bg-slate-200 rounded-lg min-h-0" />
-
-          {/* Highlight navigation */}
-          {highlightCount > 0 && (
-            <div className="w-full max-w-lg shrink-0 flex flex-col gap-2.5 pb-2">
-              <div className="flex items-center justify-between">
-                {/* p-ui-medium: 16px / 500 / lh-24 */}
-                <span className="text-slate-500 text-base font-medium leading-6">
-                  {highlights[highlightIndex]?.title}
-                </span>
-                <div className="flex items-center gap-2">
-                  <button
-                    onClick={() => navigateHighlight("prev")}
-                    disabled={highlightIndex === 0}
-                    className="text-slate-400 hover:text-slate-600 disabled:opacity-40 transition-colors"
-                  >
-                    <ArrowLeft size={16} />
-                  </button>
-                  {/* p-ui-medium */}
-                  <span className="text-slate-400 text-base font-medium leading-6 w-10 text-center">
-                    {highlightIndex + 1}/{highlightCount}
+          <span className="flex items-center gap-1 text-xs text-gray-400">
+            {mediaDuration !== null && (() => {
+              const remaining = Math.max(0, mediaDuration * (1 - mediaProgress / 100));
+              return (
+                <>
+                  <span className="tabular-nums">
+                    {Math.floor(remaining / 60)}:{String(Math.floor(remaining % 60)).padStart(2, "0")}
                   </span>
-                  <button
-                    onClick={() => navigateHighlight("next")}
-                    disabled={highlightIndex === highlightCount - 1}
-                    className="text-slate-400 hover:text-slate-600 disabled:opacity-40 transition-colors"
-                  >
-                    <ArrowRight size={16} />
-                  </button>
-                </div>
-              </div>
-              <div className="h-0.5 w-full bg-slate-100 rounded-full relative overflow-hidden">
-                <div
-                  className="absolute inset-y-0 left-0 bg-slate-800 rounded-full transition-all duration-300"
-                  style={{ width: `${progressPct}%` }}
-                />
-              </div>
-            </div>
-          )}
+                  <span>•</span>
+                </>
+              );
+            })()}
+            Use <ArrowLeft size={12} /> <ArrowRight size={12} /> to cycle through projects
+          </span>
         </div>
-
-        {/* Right — project details */}
-        <div className="flex-[1] flex flex-col justify-between pb-6">
-          {/* p-ui-medium: 16px / 500 / lh-24 */}
-          <p className="text-slate-500 text-base font-medium leading-6">
-            {currentProject.description}
-          </p>
-          {currentProject.publications && currentProject.publications.length > 0 && (
-            <div className="flex flex-col items-start gap-0.5">
-              {/* p: 16px / 400 / lh-28 */}
-              <span className="text-slate-500 text-base font-normal leading-7">Published in</span>
-              <div className="flex gap-2.5 flex-wrap">
-                {currentProject.publications.map((pub) => (
-                  // p-ui-medium
-                  <span key={pub} className="text-slate-500 text-base font-medium leading-6">
-                    {pub}
-                  </span>
-                ))}
-              </div>
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* Bottom bar — name + socials */}
-      <div className="flex items-center justify-center gap-5 min-h-[10vh] shrink-0">
-        {/* p-ui-medium: 16px / 500 / lh-24 */}
-        <span className="text-slate-500 text-base font-medium leading-6">Vikas Yadav</span>
-        <div className="flex items-center">
-          <a
-            href="mailto:hello@vikasyadav.com"
-            className="flex items-center justify-center size-8 text-slate-400 hover:text-slate-600 transition-colors"
-            aria-label="Email"
-          >
-            <Mail size={16} />
-          </a>
-          <a
-            href="https://linkedin.com/in/vikasyadav"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center justify-center size-8 text-slate-400 hover:text-slate-600 transition-colors"
-            aria-label="LinkedIn"
-          >
-            <Linkedin size={16} />
-          </a>
-        </div>
-      </div>
+      </motion.div>
     </div>
   );
 }
