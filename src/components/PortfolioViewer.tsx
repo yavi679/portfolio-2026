@@ -173,7 +173,7 @@ export default function PortfolioViewer() {
       <motion.div
         className="shrink-0 h-full overflow-hidden"
         animate={{ width: aboutExpanded ? sideWidth : 0 }}
-        transition={{ type: "spring", stiffness: 600, damping: 55, clamp: true }}
+        transition={{ type: "spring", stiffness: 600, damping: 55 }}
       >
         {/* Inner div is always sideWidth wide so content doesn't reflow during animation */}
         <div
@@ -392,7 +392,7 @@ export default function PortfolioViewer() {
       <motion.div
         className="shrink-0 h-full overflow-hidden bg-gray-50"
         animate={{ width: detailsExpanded ? sideWidth - 20 : 0 }}
-        transition={{ type: "spring", stiffness: 600, damping: 55, clamp: true }}
+        transition={{ type: "spring", stiffness: 600, damping: 55 }}
         onClick={() => setDetailsExpanded(false)}
       >
         {/* Inner div is always (sideWidth - 20) wide; gap to hero comes from hero's marginRight */}
