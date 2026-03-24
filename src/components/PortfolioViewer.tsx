@@ -7,6 +7,23 @@ import { getAllProjects, getProjectGroup, workHistory } from "@/lib/projects";
 
 const allProjects = getAllProjects();
 
+let audioCtx: AudioContext | null = null;
+function playClick(freq = 900, duration = 0.04, volume = 0.07) {
+  if (typeof window === "undefined") return;
+  if (!audioCtx) audioCtx = new AudioContext();
+  const ctx = audioCtx;
+  const osc = ctx.createOscillator();
+  const gain = ctx.createGain();
+  osc.connect(gain);
+  gain.connect(ctx.destination);
+  osc.type = "sine";
+  osc.frequency.value = freq;
+  gain.gain.setValueAtTime(volume, ctx.currentTime);
+  gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + duration);
+  osc.start(ctx.currentTime);
+  osc.stop(ctx.currentTime + duration);
+}
+
 export default function PortfolioViewer() {
   const [selectedId, setSelectedId] = useState(allProjects[0]?.id ?? "");
   const [aboutExpanded, setAboutExpanded] = useState(false);
@@ -117,12 +134,14 @@ export default function PortfolioViewer() {
   useEffect(() => {
     function handleKeyDown(e: KeyboardEvent) {
       if (e.key === "a" || e.key === "A") {
+        playClick(900);
         setAKeyDown(true);
         setAboutExpanded((v) => {
           if (!v) setDetailsExpanded(false);
           return !v;
         });
       } else if (e.key === "d" || e.key === "D") {
+        playClick(900);
         setDKeyDown(true);
         setDetailsExpanded((v) => {
           if (!v) setAboutExpanded(false);
@@ -130,9 +149,11 @@ export default function PortfolioViewer() {
         });
       } else if (e.key === "ArrowLeft" || e.key === "ArrowUp") {
         e.preventDefault();
+        playClick(700, 0.03, 0.05);
         navigateProject("prev");
       } else if (e.key === "ArrowRight" || e.key === "ArrowDown") {
         e.preventDefault();
+        playClick(700, 0.03, 0.05);
         navigateProject("next");
       }
     }
@@ -153,8 +174,8 @@ export default function PortfolioViewer() {
 
       {/* ── About pill — screen-edge anchored, 1-col wide ──────────────── */}
       <motion.button
-        onClick={() => { setAboutExpanded(true); setDetailsExpanded(false); }}
-        className={`group absolute top-5 left-0 z-30 flex items-center justify-center gap-2 transition-colors duration-100 px-4 cursor-pointer shrink-0 ${aKeyDown ? "bg-gray-500" : "bg-gray-300 hover:bg-gray-400 active:bg-gray-500"}`}
+        onClick={() => { playClick(); setAboutExpanded(true); setDetailsExpanded(false); }}
+        className={`group absolute top-5 left-0 z-30 flex items-center justify-center gap-2 transition-colors duration-100 px-4 cursor-pointer shrink-0 ${aKeyDown ? "bg-gray-200" : "bg-gray-50 hover:bg-gray-100 active:bg-gray-200"}`}
         style={{
           height: 34,
           width: "calc(20px + (100vw - 220px) / 10)",
@@ -183,8 +204,8 @@ export default function PortfolioViewer() {
         >
           {/* Header — click to collapse */}
           <button
-            onClick={(e) => { e.stopPropagation(); setAboutExpanded(false); }}
-            className={`group flex items-center justify-center gap-1.5 w-full px-5 py-1 rounded-[20px] transition-colors duration-100 shrink-0 cursor-pointer ${aKeyDown ? "bg-gray-500" : "bg-gray-300 hover:bg-gray-400 active:bg-gray-500"}`}
+            onClick={(e) => { e.stopPropagation(); playClick(); setAboutExpanded(false); }}
+            className={`group flex items-center justify-center gap-1.5 w-full px-5 py-1 rounded-[20px] transition-colors duration-100 shrink-0 cursor-pointer ${aKeyDown ? "bg-gray-200" : "bg-gray-50 hover:bg-gray-100 active:bg-gray-200"}`}
             style={{ height: 34 }}
           >
             <img src="/projects/avatar.png" alt="Vikas" className="rounded-full object-cover" style={{ width: 28, height: 28 }} />
@@ -325,13 +346,15 @@ export default function PortfolioViewer() {
           {/* Action buttons */}
           <div className="flex items-center gap-2.5">
             <button
-              className={`group flex items-center gap-1.5 transition-colors duration-100 rounded-full px-5 cursor-pointer ${dKeyDown ? "bg-gray-500" : "bg-gray-300 hover:bg-gray-400 active:bg-gray-500"}`}
+              className={`group flex items-center gap-1.5 transition-colors duration-100 border border-gray-300 rounded-full px-5 cursor-pointer ${dKeyDown ? "bg-gray-200" : "bg-transparent hover:bg-gray-100 active:bg-gray-200"}`}
               style={{ height: 34 }}
-              onClick={() =>
+              onClick={() => {
+                playClick();
                 setDetailsExpanded((v) => {
                   if (!v) setAboutExpanded(false);
                   return !v;
-                })
+                });
+              }
               }
             >
               <span className="text-base text-gray-900">Show details</span>
