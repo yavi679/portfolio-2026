@@ -192,7 +192,7 @@ export default function PortfolioViewer() {
 
       {/* ── About panel — cols 1–2 (flex child, pushes hero) ──────────── */}
       <motion.div
-        className="shrink-0 h-full overflow-hidden"
+        className="shrink-0 h-full overflow-hidden relative"
         animate={{ width: aboutExpanded ? sideWidth : 0 }}
         transition={{ type: "spring", stiffness: 600, damping: 55 }}
       >
@@ -243,6 +243,12 @@ export default function PortfolioViewer() {
               )}
             </div>
           ))}
+        </div>
+
+        {/* Made with Claude — pinned to bottom center */}
+        <div className="absolute bottom-5 left-0 right-0 flex items-center justify-center gap-1 pointer-events-none" style={{ width: sideWidth }}>
+          <span className="text-gray-300 leading-6" style={{ fontSize: 12 }}>Made with</span>
+          <img src="/claude-logo.svg" alt="Claude" style={{ width: 16, height: 16 }} />
         </div>
       </motion.div>
 
