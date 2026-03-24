@@ -7,6 +7,11 @@ const geist = Geist({ subsets: ["latin"] });
 export const metadata: Metadata = {
   title: "Vikas Yadav — Product Designer",
   description: "Portfolio of Vikas Yadav, Product Designer.",
+  openGraph: {
+    title: "Vikas Yadav — Product Designer",
+    description: "Portfolio of Vikas Yadav, Product Designer.",
+    images: [{ url: "/projects/avatar.png" }],
+  },
 };
 
 export default function RootLayout({
