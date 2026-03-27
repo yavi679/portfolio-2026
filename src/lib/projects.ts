@@ -43,7 +43,7 @@ export const workHistory: WorkEntry[] = [
     company: "Adobe Firefly",
     logoUrl: "/projects/app-logos/adobe-firefly.png",
     role: "Product Designer, GenAI",
-    years: "2023–2025",
+    years: "2023–2026",
     description:
       "Leading design for AI-driven creative tools across audio, speech, and video. Defined interaction models for generative sound effects and speech introducing performance-based workflows, multi-model systems, and scalable patterns now informing future Adobe products.",
   },
