@@ -43,6 +43,7 @@ export default function PortfolioViewer() {
   const anyPanelOpen = aboutExpanded || detailsExpanded;
 
   const videoRef = useRef<HTMLVideoElement | null>(null);
+  const detailsPausedRef = useRef(false);
 
   // Recompute sideWidth on resize — grid: 10 cols, 20px gutters, 20px outer margin
   useEffect(() => {
@@ -59,12 +60,20 @@ export default function PortfolioViewer() {
     setMediaDuration(null);
   }, []);
 
+  const setDetailsPaused = useCallback((paused: boolean) => {
+    detailsPausedRef.current = paused;
+    const video = videoRef.current;
+    if (!video) return;
+    if (paused) video.pause();
+    else video.play().catch(() => {});
+  }, []);
+
   const navigateProject = useCallback(
     (dir: "prev" | "next") => {
-      if (dir === "prev" && currentIndex > 0)
-        selectProject(allProjects[currentIndex - 1].id);
-      if (dir === "next" && currentIndex < allProjects.length - 1)
-        selectProject(allProjects[currentIndex + 1].id);
+      if (dir === "prev")
+        selectProject(allProjects[(currentIndex - 1 + allProjects.length) % allProjects.length].id);
+      if (dir === "next")
+        selectProject(allProjects[(currentIndex + 1) % allProjects.length].id);
     },
     [currentIndex, selectProject]
   );
@@ -113,18 +122,25 @@ export default function PortfolioViewer() {
     const DURATION = currentProject?.duration ?? 5000;
     setMediaDuration(DURATION / 1000);
     setMediaProgress(0);
-    const start = performance.now();
+    let elapsed = 0;
+    let lastTime: number | null = null;
     let rafId: number;
     const tick = (now: number) => {
-      const pct = Math.min(((now - start) / DURATION) * 100, 100);
-      setMediaProgress(pct);
-      if (pct < 100) {
-        rafId = requestAnimationFrame(tick);
+      if (!detailsPausedRef.current) {
+        if (lastTime !== null) elapsed += now - lastTime;
+        lastTime = now;
+        const pct = Math.min((elapsed / DURATION) * 100, 100);
+        setMediaProgress(pct);
+        if (pct >= 100) {
+          setMediaProgress(0);
+          const next = (currentIndex + 1) % allProjects.length;
+          selectProject(allProjects[next].id);
+          return;
+        }
       } else {
-        setMediaProgress(0);
-        const next = (currentIndex + 1) % allProjects.length;
-        selectProject(allProjects[next].id);
+        lastTime = null;
       }
+      rafId = requestAnimationFrame(tick);
     };
     rafId = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(rafId);
@@ -178,7 +194,7 @@ export default function PortfolioViewer() {
         className={`group absolute top-5 left-0 z-30 flex items-center justify-center gap-2 transition-colors duration-100 px-4 cursor-pointer shrink-0 ${aKeyDown ? "bg-gray-200" : "bg-gray-50 hover:bg-gray-100 active:bg-gray-200"}`}
         style={{
           height: 34,
-          width: "calc(20px + (100vw - 220px) / 10)",
+          width: "calc(40px + (100vw - 220px) / 5)",
           borderRadius: "0 17px 17px 0",
           pointerEvents: aboutExpanded ? "none" : "auto",
         }}
@@ -187,6 +203,7 @@ export default function PortfolioViewer() {
         transition={{ opacity: { duration: 0.12 } }}
       >
         <img src="/projects/avatar.png" alt="Vikas" className="rounded-full object-cover" style={{ width: 28, height: 28 }} />
+        <span className="text-base text-gray-900">About Vikas</span>
         <span className={`transition-colors duration-100 text-base ${aKeyDown ? "text-gray-700" : "text-gray-400 group-hover:text-gray-600 group-active:text-gray-700"}`}>A</span>
       </motion.button>
 
@@ -198,8 +215,8 @@ export default function PortfolioViewer() {
       >
         {/* Inner div is always sideWidth wide so content doesn't reflow during animation */}
         <div
-          className="h-full overflow-y-auto flex flex-col cursor-pointer"
-          style={{ width: sideWidth, padding: 20, gap: 40 }}
+          className="h-full overflow-y-auto flex flex-col"
+          style={{ width: sideWidth, padding: 20, gap: 40, cursor: "url('/cursor-eyes.svg') 16 16, text" }}
           onClick={() => setAboutExpanded(false)}
         >
           {/* Header — click to collapse */}
@@ -209,6 +226,7 @@ export default function PortfolioViewer() {
             style={{ height: 34 }}
           >
             <img src="/projects/avatar.png" alt="Vikas" className="rounded-full object-cover" style={{ width: 28, height: 28 }} />
+            <span className="text-base text-gray-900">About Vikas</span>
             <span className={`transition-colors duration-100 text-base ${aKeyDown ? "text-gray-700" : "text-gray-400 group-hover:text-gray-600 group-active:text-gray-700"}`}>A</span>
           </button>
 
@@ -243,12 +261,11 @@ export default function PortfolioViewer() {
               )}
             </div>
           ))}
-        </div>
-
-        {/* Made with Claude — pinned to bottom center */}
-        <div className="absolute bottom-5 left-0 right-0 flex items-center justify-center gap-1 pointer-events-none" style={{ width: sideWidth }}>
-          <span className="text-gray-300 leading-6" style={{ fontSize: 12 }}>Made with</span>
-          <img src="/claude-logo.svg" alt="Claude" style={{ width: 16, height: 16 }} />
+          {/* Made with Claude — end of scrollable content */}
+          <div className="flex items-center justify-center gap-1">
+            <span className="text-gray-400 leading-6" style={{ fontSize: 12 }}>Made with</span>
+            <img src="/claude-logo.svg" alt="Claude" style={{ width: 16, height: 16 }} />
+          </div>
         </div>
       </motion.div>
 
@@ -366,13 +383,18 @@ export default function PortfolioViewer() {
               <span className="text-base text-gray-900">Show details</span>
               <span className={`text-base transition-colors duration-100 ${dKeyDown ? "text-gray-700" : "text-gray-400 group-hover:text-gray-600 group-active:text-gray-700"}`}>D</span>
             </button>
-            <button
-              className="flex items-center gap-1.5 bg-transparent hover:bg-gray-100 active:bg-gray-200 transition-colors duration-100 border border-gray-300 rounded-full px-5 cursor-pointer"
-              style={{ height: 34 }}
-            >
-              <span className="text-base text-gray-900">Try it</span>
-              <ArrowUpRight size={16} className="text-gray-400" />
-            </button>
+            {currentProject?.tryItUrl && (
+              <a
+                href={currentProject.tryItUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-1.5 bg-transparent hover:bg-gray-100 active:bg-gray-200 transition-colors duration-100 border border-gray-300 rounded-full px-5 cursor-pointer"
+                style={{ height: 34 }}
+              >
+                <span className="text-base text-gray-900">Try it</span>
+                <ArrowUpRight size={16} className="text-gray-400" />
+              </a>
+            )}
           </div>
         </motion.div>
 
@@ -422,12 +444,14 @@ export default function PortfolioViewer() {
         className="shrink-0 h-full overflow-hidden bg-gray-50"
         animate={{ width: detailsExpanded ? sideWidth - 20 : 0 }}
         transition={{ type: "spring", stiffness: 600, damping: 55 }}
+        onMouseEnter={() => setDetailsPaused(true)}
+        onMouseLeave={() => setDetailsPaused(false)}
         onClick={() => setDetailsExpanded(false)}
       >
         {/* Inner div is always (sideWidth - 20) wide; gap to hero comes from hero's marginRight */}
         <div
-          className="h-full overflow-y-auto cursor-pointer"
-          style={{ width: sideWidth - 20 }}
+          className="h-full overflow-y-auto"
+          style={{ width: sideWidth - 20, cursor: "url('/cursor-eyes.svg') 16 16, text" }}
         >
           <div className="flex flex-col" style={{ paddingTop: 20, paddingRight: 20, paddingBottom: 20, paddingLeft: 0, gap: 40 }}>
             {currentProject?.details && Object.entries(currentProject.details).map(([key, value]) => (

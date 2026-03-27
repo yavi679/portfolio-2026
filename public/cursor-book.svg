@@ -1,0 +1,8 @@
+<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Left page -->
+  <path d="M12 6C9 5 5 5.5 3 6.5V19C5 18 9 17.5 12 18.5V6Z" fill="#1f2937" opacity="0.85"/>
+  <!-- Right page -->
+  <path d="M12 6C15 5 19 5.5 21 6.5V19C19 18 15 17.5 12 18.5V6Z" fill="#374151" opacity="0.85"/>
+  <!-- Spine -->
+  <line x1="12" y1="6" x2="12" y2="18.5" stroke="#111827" stroke-width="1"/>
+</svg>

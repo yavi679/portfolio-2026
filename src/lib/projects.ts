@@ -13,6 +13,7 @@ export interface Project {
   description: string;
   videoUrl?: string;
   imageUrl?: string;
+  tryItUrl?: string;
   bg?: string;
   duration?: number; // ms, for image/gif auto-advance
   details?: ProjectDetails;
@@ -41,7 +42,7 @@ export const workHistory: WorkEntry[] = [
   {
     company: "Adobe Firefly",
     logoUrl: "/projects/app-logos/adobe-firefly.png",
-    role: "Product designer, GenAI",
+    role: "Product Designer, GenAI",
     years: "2023–2025",
     description:
       "Leading design for AI-driven creative tools across audio, speech, and video. Defined interaction models for generative sound effects and speech introducing performance-based workflows, multi-model systems, and scalable patterns now informing future Adobe products.",
@@ -49,7 +50,7 @@ export const workHistory: WorkEntry[] = [
   {
     company: "Microsoft Outlook",
     logoUrl: "/projects/app-logos/microsoft-outlook.png",
-    role: "Product designer",
+    role: "Product Designer",
     years: "2020–2022",
     description:
       "Led cross-platform design initiatives across theming, branding, and visual systems. Re-architected Outlook's surface and illustration systems in collaboration with Fluent design bringing consistency, expression, and modernity across web, desktop, and mobile.",
@@ -75,7 +76,7 @@ export const projectGroups: CompanyGroup[] = [
   {
     company: "Adobe Firefly",
     logoUrl: "/projects/app-logos/adobe-firefly.png",
-    role: "Product designer",
+    role: "Product Designer",
     years: "2023–2025",
     description: "Led 0→1 design of generative audio tools and multi-model UX systems.",
     projects: [
@@ -83,6 +84,7 @@ export const projectGroups: CompanyGroup[] = [
         id: "generative-sfx",
         title: "Generative SFX",
         year: "2024, 2025",
+        tryItUrl: "https://firefly.adobe.com/generate/sound-effects",
         hook: "Turning sound effects into something you perform in time, not describe in prompts.",
         description:
           "Defined a new interaction model for generative audio combining performance-driven input with a lightweight timeline system to enable precise, iterative sound design directly on video.",
@@ -99,6 +101,7 @@ export const projectGroups: CompanyGroup[] = [
         id: "generative-speech",
         title: "Generative Speech",
         year: "2025",
+        tryItUrl: "https://firefly.adobe.com/generate/speech",
         hook: "Turning speech generation into a system for orchestration, not just output.",
         description:
           "Defined a platform approach to generative speech, supporting both Adobe and third-party models while introducing interaction patterns for previewing, iterating, and directing expressive audio.",
@@ -116,7 +119,7 @@ export const projectGroups: CompanyGroup[] = [
   {
     company: "Microsoft Outlook",
     logoUrl: "/projects/app-logos/microsoft-outlook.png",
-    role: "Product designer",
+    role: "Product Designer",
     years: "2020–2022",
     description: "Drove 3D illustrations, expressive theming, and reactions UX.",
     projects: [
@@ -124,6 +127,7 @@ export const projectGroups: CompanyGroup[] = [
         id: "3d-illustrations",
         title: "3D Illustrations",
         year: "2021, 2022",
+        tryItUrl: "https://www.microsoft.com/en-us/microsoft-365/outlook/email-and-calendar-software-microsoft-outlook?deeplink=%2Fmail%2F&sdf=0",
         hook: "Moving illustrations from decorative assets to integrated product language.",
         description:
           "Defined a scalable 3D visual system for Outlook bridging brand direction with product needs to create cohesive, expressive interfaces across platforms.",
