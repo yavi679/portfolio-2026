@@ -33,6 +33,7 @@ export default function PortfolioViewer() {
   const [mediaDuration, setMediaDuration] = useState<number | null>(null);
   const [aKeyDown, setAKeyDown] = useState(false);
   const [dKeyDown, setDKeyDown] = useState(false);
+  const [heroHovered, setHeroHovered] = useState(false);
   // sideWidth = 20px outer margin + 2-col content (2*(W-220)/10 + 20px gutter) + 20px gap to hero
   const [sideWidth, setSideWidth] = useState(304);
 
@@ -188,35 +189,18 @@ export default function PortfolioViewer() {
   return (
     <div className="h-screen overflow-hidden flex bg-gray-50 relative">
 
-      {/* ── About pill — screen-edge anchored, 1-col wide ──────────────── */}
-      <motion.button
-        onClick={() => { playClick(); setAboutExpanded(true); setDetailsExpanded(false); }}
-        className={`group absolute top-5 left-0 z-30 flex items-center justify-center gap-2 transition-colors duration-100 px-4 cursor-pointer shrink-0 ${aKeyDown ? "bg-gray-200" : "bg-gray-50 hover:bg-gray-100 active:bg-gray-200"}`}
-        style={{
-          height: 34,
-          width: "calc(40px + (100vw - 220px) / 5)",
-          borderRadius: "0 17px 17px 0",
-          pointerEvents: aboutExpanded ? "none" : "auto",
-        }}
-        initial={{ opacity: 0 }}
-        animate={{ opacity: aboutExpanded ? 0 : 1 }}
-        transition={{ opacity: { duration: 0.12 } }}
-      >
-        <img src="/projects/avatar.png" alt="Vikas" className="rounded-full object-cover" style={{ width: 28, height: 28 }} />
-        <span className="text-base text-gray-900">About Vikas</span>
-        <span className={`transition-colors duration-100 text-base ${aKeyDown ? "text-gray-700" : "text-gray-400 group-hover:text-gray-600 group-active:text-gray-700"}`}>A</span>
-      </motion.button>
-
       {/* ── About panel — cols 1–2 (flex child, pushes hero) ──────────── */}
       <motion.div
         className="shrink-0 h-full overflow-hidden relative"
         animate={{ width: aboutExpanded ? sideWidth : 0 }}
         transition={{ type: "spring", stiffness: 600, damping: 55 }}
+        onMouseEnter={() => setDetailsPaused(true)}
+        onMouseLeave={() => setDetailsPaused(false)}
       >
         {/* Inner div is always sideWidth wide so content doesn't reflow during animation */}
         <div
           className="h-full overflow-y-auto flex flex-col"
-          style={{ width: sideWidth, padding: 20, gap: 40, cursor: "url('/cursor-eyes.svg') 16 16, text" }}
+          style={{ width: sideWidth, padding: 20, paddingTop: 40, gap: 40, cursor: "url('/cursor-eyes.svg') 16 16, text" }}
           onClick={() => setAboutExpanded(false)}
         >
           {/* Header — click to collapse */}
@@ -229,6 +213,30 @@ export default function PortfolioViewer() {
             <span className="text-base text-gray-900">About Vikas</span>
             <span className={`transition-colors duration-100 text-base ${aKeyDown ? "text-gray-700" : "text-gray-400 group-hover:text-gray-600 group-active:text-gray-700"}`}>A</span>
           </button>
+
+          {/* Contact buttons */}
+          <div className="flex items-center gap-2.5">
+            <a
+              href="https://www.linkedin.com/in/vikas-yadav-/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="group flex flex-1 items-center justify-center gap-1.5 transition-colors duration-100 border border-gray-300 rounded-full px-5 cursor-pointer bg-transparent hover:bg-gray-100 active:bg-gray-200"
+              style={{ height: 34 }}
+            >
+              <span className="text-base text-gray-900">LinkedIn</span>
+              <ArrowUpRight size={16} className="text-gray-400" />
+            </a>
+            <a
+              href="mailto:viy.vikasyadav@gmail.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="group flex flex-1 items-center justify-center gap-1.5 transition-colors duration-100 border border-gray-300 rounded-full px-5 cursor-pointer bg-transparent hover:bg-gray-100 active:bg-gray-200"
+              style={{ height: 34 }}
+            >
+              <span className="text-base text-gray-900">Contact</span>
+              <ArrowUpRight size={16} className="text-gray-400" />
+            </a>
+          </div>
 
           {/* Bio */}
           <p className="text-base text-gray-900 leading-[1.5]">Designing systems that turn complexity into clarity across AI, creativity and productivity.</p>
@@ -261,11 +269,7 @@ export default function PortfolioViewer() {
               )}
             </div>
           ))}
-          {/* Made with Claude — end of scrollable content */}
-          <div className="flex items-center justify-center gap-1">
-            <span className="text-gray-400 leading-6" style={{ fontSize: 12 }}>Made with</span>
-            <img src="/claude-logo.svg" alt="Claude" style={{ width: 16, height: 16 }} />
-          </div>
+
         </div>
       </motion.div>
 
@@ -273,6 +277,8 @@ export default function PortfolioViewer() {
       <motion.div
         className="relative overflow-hidden flex-1 min-w-0"
         style={{ borderStyle: "solid", borderColor: "#e5e7eb" }}
+        onMouseEnter={() => setHeroHovered(true)}
+        onMouseLeave={() => setHeroHovered(false)}
         initial={false}
         animate={{
           marginTop: anyPanelOpen ? 20 : 0,
@@ -287,6 +293,25 @@ export default function PortfolioViewer() {
           borderWidth: { duration: 0.08, ease: "easeIn" },
         }}
       >
+        {/* ── About pill — inside hero, top-left ──────────────────────── */}
+        <motion.button
+          onClick={() => { playClick(); setAboutExpanded(true); setDetailsExpanded(false); }}
+          className={`group absolute z-30 flex items-center justify-center gap-2 transition-colors duration-100 px-4 cursor-pointer shrink-0 text-sm font-medium border border-white/50 backdrop-blur-md ${aKeyDown ? "bg-white/80 text-zinc-900" : "bg-white/60 text-zinc-900 hover:bg-white/75 active:bg-white/80"}`}
+          initial={{ top: 32, left: 32, opacity: 0 }}
+          animate={{ top: anyPanelOpen ? 20 : 32, left: anyPanelOpen ? 20 : 32, opacity: aboutExpanded ? 0 : 1 }}
+          transition={{ type: "spring", stiffness: 600, damping: 55, opacity: { duration: 0.12 } }}
+          style={{
+            height: 36,
+            width: "fit-content",
+            borderRadius: 20,
+            pointerEvents: aboutExpanded ? "none" : "auto",
+          }}
+        >
+          <img src="/projects/avatar.png" alt="Vikas" className="rounded-full object-cover" style={{ width: 28, height: 28 }} />
+          <span className="text-sm text-zinc-900">About Vikas</span>
+          <span className="text-sm text-zinc-500">A</span>
+        </motion.button>
+
         {/* Background media */}
         {currentProject?.videoUrl && (
           <video
@@ -319,7 +344,7 @@ export default function PortfolioViewer() {
           className="absolute inset-0 pointer-events-none"
           style={{
             background:
-              "linear-gradient(180deg, rgba(0,0,0,0.30) 0%, rgba(255,255,255,0.95) 89.9%)",
+              "linear-gradient(180deg, rgba(0,0,0,0.04) 0%, rgba(255,255,255,0) 38%, rgba(255,255,255,0.08) 48%, rgba(255,255,255,0.18) 54%, rgba(255,255,255,0.32) 60%, rgba(255,255,255,0.50) 66%, rgba(255,255,255,0.68) 72%, rgba(255,255,255,0.82) 78%, rgba(255,255,255,0.92) 84%, rgba(255,255,255,0.97) 90%)",
           }}
         />
 
@@ -404,6 +429,28 @@ export default function PortfolioViewer() {
           animate={{ padding: anyPanelOpen ? 20 : 32 }}
           transition={{ type: "spring", stiffness: 600, damping: 55 }}
         >
+          <motion.div
+            className="flex items-center gap-1 text-base text-gray-400 whitespace-nowrap"
+            animate={{ opacity: heroHovered || detailsExpanded || aboutExpanded ? 1 : 0 }}
+            transition={{ duration: 0.2 }}
+          >
+            {heroHovered && !detailsExpanded && (
+              <span className="flex items-center gap-1">
+                Use <ArrowLeft size={12} /> <ArrowRight size={12} /> to cycle through projects
+              </span>
+            )}
+            {mediaDuration !== null && (() => {
+              const remaining = Math.max(0, mediaDuration * (1 - mediaProgress / 100));
+              return (
+                <>
+                  {heroHovered && !detailsExpanded && <span>•</span>}
+                  <span className="tabular-nums">
+                    {Math.floor(remaining / 60)}:{String(Math.floor(remaining % 60)).padStart(2, "0")}
+                  </span>
+                </>
+              );
+            })()}
+          </motion.div>
           <div className="flex gap-1" style={{ width: 200 }}>
             {allProjects.map((p, i) => (
               <div
@@ -422,20 +469,6 @@ export default function PortfolioViewer() {
               </div>
             ))}
           </div>
-          <span className="flex items-center gap-1 text-base text-gray-400">
-            {mediaDuration !== null && (() => {
-              const remaining = Math.max(0, mediaDuration * (1 - mediaProgress / 100));
-              return (
-                <>
-                  <span className="tabular-nums">
-                    {Math.floor(remaining / 60)}:{String(Math.floor(remaining % 60)).padStart(2, "0")}
-                  </span>
-                  <span>•</span>
-                </>
-              );
-            })()}
-            Use <ArrowLeft size={12} /> <ArrowRight size={12} /> to cycle through projects
-          </span>
         </motion.div>
       </motion.div>
 
@@ -453,7 +486,7 @@ export default function PortfolioViewer() {
           className="h-full overflow-y-auto"
           style={{ width: sideWidth - 20, cursor: "url('/cursor-eyes.svg') 16 16, text" }}
         >
-          <div className="flex flex-col" style={{ paddingTop: 20, paddingRight: 20, paddingBottom: 20, paddingLeft: 0, gap: 40 }}>
+          <div className="flex flex-col" style={{ paddingTop: 40, paddingRight: 20, paddingBottom: 20, paddingLeft: 0, gap: 40 }}>
             {currentProject?.details && Object.entries(currentProject.details).map(([key, value]) => (
               value && (
                 <div key={key} className="flex flex-col gap-2.5">
