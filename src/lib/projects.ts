@@ -176,10 +176,10 @@ export const projectGroups: CompanyGroup[] = [
         videoUrl: "/projects/smart-templates/01-Excel-x-Wolfram-templates.mp4",
         bg: "#000000",
         details: {
-          context: "Adobe needed to establish a credible position in generative audio—both to stay competitive and to lay the foundation for multi-media AI workflows across Creative Cloud.",
-          problem: "Most speech tools optimized for output quality, but lacked control, iteration, and integration into real creative workflows. Prompt → generate was too rigid for expressive use.",
-          approach: "Reframed speech generation as orchestration.\n\nDefined a platform model supporting both native and third-party speech systems, alongside reusable interaction primitives:\n• model selection with preview'able voice states\n• versioned generation history for iterative comparison\n• segment-level auditioning with emotion-aware playback\n\nMade key tradeoffs toward simplicity, intentionally avoiding timeline editing and full text tooling to prioritize speed, clarity, and early adoption.",
-          outcome: "Adobe needed to establish a credible position in generative audio—both to stay competitive and to lay the foundation for multi-media AI workflows across Creative Cloud.",
+          context: "Excel partnered with Wolfram Alpha to bring rich external datasets into spreadsheets through data types, creating an opportunity to reimagine how users start and interact with data.",
+          problem: "Traditional templates were static and rigid, failing to demonstrate the value of dynamic data or guide users toward meaningful outcomes. The blank canvas remained a barrier for many users.",
+          approach: "Reframed templates as lightweight applications.\n\nDefined a system that connects data, structure, and interaction:\n• data-bound dashboards powered by external datasets\n• progressive setup with smart defaults and auto-suggestions\n• app-like interaction patterns within spreadsheets\n\nDesigned templates as a connected ecosystem, enabling scenarios to extend and build on each other.\n\nIn parallel, developed a reusable toolkit allowing content teams to scale template creation across use cases.",
+          outcome: "Shipped 10+ smart templates as part of a Microsoft 365 consumer initiative spanning health, education, planning, and lifestyle scenarios.\n\nTransformed templates from static starting points into dynamic, data-driven experiences while enabling partner teams to extend the system at scale.",
         },
       },
       {
