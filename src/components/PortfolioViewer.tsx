@@ -246,8 +246,8 @@ export default function PortfolioViewer() {
             <div key={entry.company} className="flex flex-col gap-2.5">
               <div className="flex flex-col gap-3">
                 <div className="flex items-center justify-between">
-                  <span className="text-base font-medium text-gray-900">{entry.company}</span>
-                  {entry.logoUrl ? (
+                  <div className="flex items-center" style={{ gap: 8 }}>
+                    {entry.logoUrl ? (
                     <img
                       src={entry.logoUrl}
                       alt={entry.company}
@@ -258,6 +258,8 @@ export default function PortfolioViewer() {
                       {entry.logoFallback}
                     </div>
                   )}
+                  <span className="text-base font-medium text-gray-900">{entry.company}</span>
+                  </div>
                 </div>
                 <div className="flex items-center justify-between text-base text-gray-400">
                   <span>{entry.role}</span>

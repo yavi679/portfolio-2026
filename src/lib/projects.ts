@@ -67,7 +67,7 @@ export const workHistory: WorkEntry[] = [
     company: "Carnegie Mellon University",
     logoUrl: "/projects/app-logos/CMU.png",
     logoRounded: false,
-    role: "M.Des",
+    role: "M.Des, Interaction Design",
     years: "2016–2018",
   },
 ];
